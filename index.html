@@ -37,6 +37,7 @@
 </div>
 
 <script>
+<script>
 const balance = document.getElementById('balance');
 const pip = document.getElementById('pip');
 const sl = document.getElementById('sl');
@@ -50,6 +51,7 @@ function updatePercent(r){
   }
 }
 
+// LOT changed → calculate Risk
 lot.addEventListener('change', () => {
   if(pip.value && sl.value && lot.value){
     let r = lot.value * pip.value * sl.value;
@@ -58,6 +60,7 @@ lot.addEventListener('change', () => {
   }
 });
 
+// RISK changed → calculate Lot
 risk.addEventListener('change', () => {
   if(pip.value && sl.value && risk.value){
     let l = risk.value / (pip.value * sl.value);
@@ -66,13 +69,22 @@ risk.addEventListener('change', () => {
   }
 });
 
+// SL changed → smart behavior
 sl.addEventListener('change', () => {
-  if(pip.value && lot.value && risk.value){
-    let s = risk.value / (lot.value * pip.value);
-    sl.value = s.toFixed(2);
+  // If lot exists → update risk
+  if(pip.value && lot.value){
+    let r = lot.value * pip.value * sl.value;
+    risk.value = r.toFixed(2);
+    updatePercent(r);
+  }
+  // If risk exists → update lot
+  else if(pip.value && risk.value){
+    let l = risk.value / (pip.value * sl.value);
+    lot.value = l.toFixed(2);
     updatePercent(risk.value);
   }
 });
+</script>
 </script>
 
 </body>
