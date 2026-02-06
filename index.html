@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Trading Risk Calculator</title>
+  <title>Smart Risk Calculator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {font-family: Arial; padding:20px; background:#f2f2f2;}
@@ -14,22 +14,22 @@
 <body>
 
 <div class="box">
-  <h2>Risk Management Calculator</h2>
+  <h2>Smart Risk Management</h2>
 
   <label>Account Balance ($)</label>
-  <input type="number" id="balance">
+  <input type="number" id="balance" oninput="calculate()">
 
   <label>Pip Value Per Lot ($)</label>
-  <input type="number" id="pip">
+  <input type="number" id="pip" oninput="calculate()">
 
   <label>SL Pips</label>
-  <input type="number" id="sl">
+  <input type="number" id="sl" oninput="calculate()">
 
   <label>Lot Size</label>
-  <input type="number" id="lot" step="0.01">
+  <input type="number" id="lot" step="0.01" oninput="calculate()">
 
   <label>Risk Per Trade ($)</label>
-  <input type="number" id="riskMoney" step="0.01">
+  <input type="number" id="riskMoney" step="0.01" oninput="calculate()">
 
   <div class="result">
     Risk Per Trade (%): <span id="riskPercent">0</span> %
@@ -37,53 +37,50 @@
 </div>
 
 <script>
-let lastEdited = null;
+function calculate(){
+  let balance = parseFloat(balanceEl.value);
+  let pip = parseFloat(pipEl.value);
+  let sl = parseFloat(slEl.value);
+  let lot = parseFloat(lotEl.value);
+  let risk = parseFloat(riskEl.value);
 
-document.querySelectorAll("input").forEach(input => {
-  input.addEventListener("input", (e) => {
-    lastEdited = e.target.id;
-    recalc();
-  });
-});
+  if(!balance || !pip) return;
 
-function recalc(){
-  let balance = parseFloat(document.getElementById('balance').value);
-  let pip = parseFloat(document.getElementById('pip').value);
-  let sl = parseFloat(document.getElementById('sl').value);
-  let lot = parseFloat(document.getElementById('lot').value);
-  let riskMoney = parseFloat(document.getElementById('riskMoney').value);
+  // Count how many of sl, lot, risk are filled
+  let filled = [sl, lot, risk].filter(v => !isNaN(v)).length;
 
-  if(!balance || !pip || !sl) return;
+  if(filled < 2) return;
 
-  // If lot was edited → calculate risk
-  if(lastEdited === "lot" && lot){
-    riskMoney = lot * pip * sl;
-    document.getElementById('riskMoney').value = riskMoney.toFixed(2);
+  // If SL missing
+  if(isNaN(sl) && lot && risk){
+    sl = risk / (lot * pip);
+    slEl.value = sl.toFixed(2);
   }
 
-  // If risk was edited → calculate lot
-  if(lastEdited === "riskMoney" && riskMoney){
-    lot = riskMoney / (pip * sl);
-    document.getElementById('lot').value = lot.toFixed(2);
+  // If LOT missing
+  if(isNaN(lot) && sl && risk){
+    lot = risk / (sl * pip);
+    lotEl.value = lot.toFixed(2);
   }
 
-  // If SL, pip, or balance changes → recalc based on what we have
-  if((lastEdited === "sl" || lastEdited === "pip" || lastEdited === "balance")){
-    if(lot){
-      riskMoney = lot * pip * sl;
-      document.getElementById('riskMoney').value = riskMoney.toFixed(2);
-    } else if(riskMoney){
-      lot = riskMoney / (pip * sl);
-      document.getElementById('lot').value = lot.toFixed(2);
-    }
+  // If RISK missing
+  if(isNaN(risk) && sl && lot){
+    risk = lot * pip * sl;
+    riskEl.value = risk.toFixed(2);
   }
 
   // Always update risk %
-  if(riskMoney){
-    let riskPercent = (riskMoney / balance) * 100;
+  if(risk){
+    let riskPercent = (risk / balance) * 100;
     document.getElementById('riskPercent').innerText = riskPercent.toFixed(2);
   }
 }
+
+const balanceEl = document.getElementById('balance');
+const pipEl = document.getElementById('pip');
+const slEl = document.getElementById('sl');
+const lotEl = document.getElementById('lot');
+const riskEl = document.getElementById('riskMoney');
 </script>
 
 </body>
