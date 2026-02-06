@@ -17,19 +17,19 @@
   <h2>Risk Management Calculator</h2>
 
   <label>Account Balance ($)</label>
-  <input type="number" id="balance" oninput="updateFromLot(); updateFromRisk();">
+  <input type="number" id="balance">
 
   <label>Pip Value Per Lot ($)</label>
-  <input type="number" id="pip" oninput="updateFromLot(); updateFromRisk();">
+  <input type="number" id="pip">
 
   <label>SL Pips</label>
-  <input type="number" id="sl" oninput="updateFromLot(); updateFromRisk();">
+  <input type="number" id="sl">
 
   <label>Lot Size</label>
-  <input type="number" id="lot" step="0.01" oninput="updateFromLot()">
+  <input type="number" id="lot" step="0.01">
 
   <label>Risk Per Trade ($)</label>
-  <input type="number" id="riskMoney" step="0.01" oninput="updateFromRisk()">
+  <input type="number" id="riskMoney" step="0.01">
 
   <div class="result">
     Risk Per Trade (%): <span id="riskPercent">0</span> %
@@ -37,32 +37,50 @@
 </div>
 
 <script>
-function updateFromLot(){
+let lastEdited = null;
+
+document.querySelectorAll("input").forEach(input => {
+  input.addEventListener("input", (e) => {
+    lastEdited = e.target.id;
+    recalc();
+  });
+});
+
+function recalc(){
   let balance = parseFloat(document.getElementById('balance').value);
   let pip = parseFloat(document.getElementById('pip').value);
   let sl = parseFloat(document.getElementById('sl').value);
   let lot = parseFloat(document.getElementById('lot').value);
-
-  if(balance && pip && sl && lot){
-    let riskMoney = lot * pip * sl;
-    let riskPercent = (riskMoney / balance) * 100;
-
-    document.getElementById('riskMoney').value = riskMoney.toFixed(2);
-    document.getElementById('riskPercent').innerText = riskPercent.toFixed(2);
-  }
-}
-
-function updateFromRisk(){
-  let balance = parseFloat(document.getElementById('balance').value);
-  let pip = parseFloat(document.getElementById('pip').value);
-  let sl = parseFloat(document.getElementById('sl').value);
   let riskMoney = parseFloat(document.getElementById('riskMoney').value);
 
-  if(balance && pip && sl && riskMoney){
-    let lot = riskMoney / (pip * sl);
-    let riskPercent = (riskMoney / balance) * 100;
+  if(!balance || !pip || !sl) return;
 
+  // If lot was edited → calculate risk
+  if(lastEdited === "lot" && lot){
+    riskMoney = lot * pip * sl;
+    document.getElementById('riskMoney').value = riskMoney.toFixed(2);
+  }
+
+  // If risk was edited → calculate lot
+  if(lastEdited === "riskMoney" && riskMoney){
+    lot = riskMoney / (pip * sl);
     document.getElementById('lot').value = lot.toFixed(2);
+  }
+
+  // If SL, pip, or balance changes → recalc based on what we have
+  if((lastEdited === "sl" || lastEdited === "pip" || lastEdited === "balance")){
+    if(lot){
+      riskMoney = lot * pip * sl;
+      document.getElementById('riskMoney').value = riskMoney.toFixed(2);
+    } else if(riskMoney){
+      lot = riskMoney / (pip * sl);
+      document.getElementById('lot').value = lot.toFixed(2);
+    }
+  }
+
+  // Always update risk %
+  if(riskMoney){
+    let riskPercent = (riskMoney / balance) * 100;
     document.getElementById('riskPercent').innerText = riskPercent.toFixed(2);
   }
 }
