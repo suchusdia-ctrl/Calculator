@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Risk Management Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f4f4f4;
+    }
+    h2 {
+      text-align: center;
+    }
+    .box {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      max-width: 400px;
+      margin: auto;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      font-size: 16px;
+    }
+    .result {
+      margin-top: 15px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<div class="box">
+  <h2>Trading Risk Calculator</h2>
+
+  <label>Account Balance (€)</label>
+  <input type="number" id="balance" placeholder="e.g. 10000">
+
+  <label>Pip Value Per Lot (€)</label>
+  <input type="number" id="pipValue" placeholder="e.g. 10">
+
+  <label>Stop Loss (Pips)</label>
+  <input type="number" id="slPips" placeholder="e.g. 5">
+
+  <label>Risk You Want (€)</label>
+  <input type="number" id="riskMoney" placeholder="e.g. 50">
+
+  <div class="result" id="output"></div>
+</div>
+
+<script>
+function calculate() {
+  const balance = parseFloat(document.getElementById('balance').value);
+  const pipValue = parseFloat(document.getElementById('pipValue').value);
+  const slPips = parseFloat(document.getElementById('slPips').value);
+  const riskMoney = parseFloat(document.getElementById('riskMoney').value);
+
+  if (balance && pipValue && slPips && riskMoney) {
+    const lotSize = riskMoney / (pipValue * slPips);
+    const riskPercent = (riskMoney / balance) * 100;
+
+    document.getElementById('output').innerHTML =
+      "Lot Size: " + lotSize.toFixed(2) + "<br>" +
+      "Risk %: " + riskPercent.toFixed(2) + "%";
+  }
+}
+
+document.querySelectorAll('input').forEach(input => {
+  input.addEventListener('input', calculate);
+});
+</script>
+
+</body>
+</html>
