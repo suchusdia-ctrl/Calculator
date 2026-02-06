@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Smart Risk Calculator</title>
+  <title>Risk Calculator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {font-family: Arial; padding:20px; background:#f2f2f2;}
@@ -14,7 +14,7 @@
 <body>
 
 <div class="box">
-  <h2>Smart Risk Management</h2>
+  <h2>Risk Management Calculator</h2>
 
   <label>Account Balance ($)</label>
   <input type="number" id="balance">
@@ -44,33 +44,35 @@ const lot = document.getElementById('lot');
 const risk = document.getElementById('risk');
 const riskPercent = document.getElementById('riskPercent');
 
-function calcFromLot(){
-  if(!balance.value || !pip.value || !sl.value || !lot.value) return;
-
-  let r = lot.value * pip.value * sl.value;
-  risk.value = r.toFixed(2);
-  riskPercent.innerText = ((r / balance.value) * 100).toFixed(2);
+function updatePercent(r){
+  if(balance.value){
+    riskPercent.innerText = ((r / balance.value) * 100).toFixed(2);
+  }
 }
 
-function calcFromRisk(){
-  if(!balance.value || !pip.value || !sl.value || !risk.value) return;
+lot.addEventListener('change', () => {
+  if(pip.value && sl.value && lot.value){
+    let r = lot.value * pip.value * sl.value;
+    risk.value = r.toFixed(2);
+    updatePercent(r);
+  }
+});
 
-  let l = risk.value / (pip.value * sl.value);
-  lot.value = l.toFixed(2);
-  riskPercent.innerText = ((risk.value / balance.value) * 100).toFixed(2);
-}
+risk.addEventListener('change', () => {
+  if(pip.value && sl.value && risk.value){
+    let l = risk.value / (pip.value * sl.value);
+    lot.value = l.toFixed(2);
+    updatePercent(risk.value);
+  }
+});
 
-function calcFromSL(){
-  if(!balance.value || !pip.value || !lot.value || !risk.value) return;
-
-  let s = risk.value / (lot.value * pip.value);
-  sl.value = s.toFixed(2);
-  riskPercent.innerText = ((risk.value / balance.value) * 100).toFixed(2);
-}
-
-lot.addEventListener('input', calcFromLot);
-risk.addEventListener('input', calcFromRisk);
-sl.addEventListener('input', calcFromSL);
+sl.addEventListener('change', () => {
+  if(pip.value && lot.value && risk.value){
+    let s = risk.value / (lot.value * pip.value);
+    sl.value = s.toFixed(2);
+    updatePercent(risk.value);
+  }
+});
 </script>
 
 </body>
