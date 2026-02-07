@@ -17,19 +17,19 @@
   <h2>Risk Management Calculator</h2>
 
   <label>Account Balance ($)</label>
-  <input type="number" id="balance" oninput="calculate('base')">
+  <input type="number" id="balance" oninput="calc()">
 
   <label>Pip Value Per Lot ($)</label>
-  <input type="number" id="pip" oninput="calculate('base')">
+  <input type="number" id="pip" oninput="calc()">
 
   <label>SL Pips</label>
-  <input type="number" id="sl" step="0.01" oninput="calculate('sl')">
+  <input type="number" id="sl" step="0.01" oninput="calc()">
 
   <label>Lot Size</label>
-  <input type="number" id="lot" step="0.01" oninput="calculate('lot')">
+  <input type="number" id="lot" step="0.01" oninput="calc()">
 
   <label>Risk Per Trade ($)</label>
-  <input type="number" id="riskMoney" step="0.01" oninput="calculate('risk')">
+  <input type="number" id="risk" step="0.01" oninput="calc()">
 
   <div class="result">
     Risk Per Trade (%): <span id="riskPercent">0</span> %
@@ -37,52 +37,48 @@
 </div>
 
 <script>
-function getVals(){
-  return {
-    balance: parseFloat(balance.value),
-    pip: parseFloat(pip.value),
-    sl: parseFloat(sl.value),
-    lot: parseFloat(lot.value),
-    risk: parseFloat(riskMoney.value)
-  };
-}
+function calc(){
+  let balance = parseFloat(balanceEl.value);
+  let pip = parseFloat(pipEl.value);
+  let sl = parseFloat(slEl.value);
+  let lot = parseFloat(lotEl.value);
+  let risk = parseFloat(riskEl.value);
 
-function setRiskPercent(risk, balance){
+  // Short references
+  const haveSL = !isNaN(sl);
+  const haveLot = !isNaN(lot);
+  const haveRisk = !isNaN(risk);
+
+  // If SL + Lot → calculate Risk
+  if(haveSL && haveLot){
+    risk = lot * pip * sl;
+    riskEl.value = risk.toFixed(2);
+  }
+
+  // If Risk + SL → calculate Lot
+  if(haveRisk && haveSL){
+    lot = risk / (pip * sl);
+    lotEl.value = lot.toFixed(2);
+  }
+
+  // If Risk + Lot → calculate SL
+  if(haveRisk && haveLot){
+    sl = risk / (lot * pip);
+    slEl.value = sl.toFixed(2);
+  }
+
+  // Risk %
   if(balance && risk){
     riskPercent.innerText = ((risk / balance) * 100).toFixed(2);
   }
 }
 
-function calculate(changed){
-  let {balance, pip, sl, lot, risk} = getVals();
-  if(!balance || !pip) return;
-
-  // If Lot changed → compute Risk
-  if(changed === 'lot' && sl){
-    risk = lot * pip * sl;
-    riskMoney.value = risk.toFixed(2);
-  }
-
-  // If Risk changed → compute Lot
-  if(changed === 'risk' && sl){
-    lot = risk / (pip * sl);
-    lot.value = lot.toFixed(2);
-  }
-
-  // If SL changed → compute Risk
-  if(changed === 'sl' && lot){
-    risk = lot * pip * sl;
-    riskMoney.value = risk.toFixed(2);
-  }
-
-  // If base values changed → recompute from Lot if exists
-  if(changed === 'base' && lot && sl){
-    risk = lot * pip * sl;
-    riskMoney.value = risk.toFixed(2);
-  }
-
-  setRiskPercent(parseFloat(riskMoney.value), balance);
-}
+// Element refs
+const balanceEl = document.getElementById('balance');
+const pipEl = document.getElementById('pip');
+const slEl = document.getElementById('sl');
+const lotEl = document.getElementById('lot');
+const riskEl = document.getElementById('risk');
 </script>
 
 </body>
