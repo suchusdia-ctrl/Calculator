@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Risk Calculator</title>
+  <title>Trading Risk Calculator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {font-family: Arial; padding:20px; background:#f2f2f2;}
@@ -17,19 +17,19 @@
   <h2>Risk Management Calculator</h2>
 
   <label>Account Balance ($)</label>
-  <input type="number" id="balance">
+  <input type="number" id="balance" oninput="updateFromLot(); updateFromRisk();">
 
   <label>Pip Value Per Lot ($)</label>
-  <input type="number" id="pip">
+  <input type="number" id="pip" oninput="updateFromLot(); updateFromRisk();">
 
   <label>SL Pips</label>
-  <input type="number" id="sl">
+  <input type="number" id="sl" oninput="updateFromLot(); updateFromRisk();">
 
   <label>Lot Size</label>
-  <input type="number" id="lot" step="0.01">
+  <input type="number" id="lot" step="0.01" oninput="updateFromLot()">
 
   <label>Risk Per Trade ($)</label>
-  <input type="number" id="risk">
+  <input type="number" id="riskMoney" step="0.01" oninput="updateFromRisk()">
 
   <div class="result">
     Risk Per Trade (%): <span id="riskPercent">0</span> %
@@ -37,52 +37,35 @@
 </div>
 
 <script>
-const balance = document.getElementById('balance');
-const pip = document.getElementById('pip');
-const sl = document.getElementById('sl');
-const lot = document.getElementById('lot');
-const risk = document.getElementById('risk');
-const riskPercent = document.getElementById('riskPercent');
+function updateFromLot(){
+  let balance = parseFloat(document.getElementById('balance').value);
+  let pip = parseFloat(document.getElementById('pip').value);
+  let sl = parseFloat(document.getElementById('sl').value);
+  let lot = parseFloat(document.getElementById('lot').value);
 
-function updatePercent(r){
-  if(balance.value){
-    riskPercent.innerText = ((r / balance.value) * 100).toFixed(2);
+  if(balance && pip && sl && lot){
+    let riskMoney = lot * pip * sl;
+    let riskPercent = (riskMoney / balance) * 100;
+
+    document.getElementById('riskMoney').value = riskMoney.toFixed(2);
+    document.getElementById('riskPercent').innerText = riskPercent.toFixed(2);
   }
 }
 
-// LOT changed → calculate Risk
-lot.addEventListener('change', () => {
-  if(pip.value && sl.value && lot.value){
-    let r = lot.value * pip.value * sl.value;
-    risk.value = r.toFixed(2);
-    updatePercent(r);
-  }
-});
+function updateFromRisk(){
+  let balance = parseFloat(document.getElementById('balance').value);
+  let pip = parseFloat(document.getElementById('pip').value);
+  let sl = parseFloat(document.getElementById('sl').value);
+  let riskMoney = parseFloat(document.getElementById('riskMoney').value);
 
-// RISK changed → calculate Lot
-risk.addEventListener('change', () => {
-  if(pip.value && sl.value && risk.value){
-    let l = risk.value / (pip.value * sl.value);
-    lot.value = l.toFixed(2);
-    updatePercent(risk.value);
-  }
-});
+  if(balance && pip && sl && riskMoney){
+    let lot = riskMoney / (pip * sl);
+    let riskPercent = (riskMoney / balance) * 100;
 
-// SL changed → smart behavior
-sl.addEventListener('change', () => {
-  // If lot exists → update risk
-  if(pip.value && lot.value){
-    let r = lot.value * pip.value * sl.value;
-    risk.value = r.toFixed(2);
-    updatePercent(r);
+    document.getElementById('lot').value = lot.toFixed(2);
+    document.getElementById('riskPercent').innerText = riskPercent.toFixed(2);
   }
-  // If risk exists → update lot
-  else if(pip.value && risk.value){
-    let l = risk.value / (pip.value * sl.value);
-    lot.value = l.toFixed(2);
-    updatePercent(risk.value);
-  }
-});
+}
 </script>
 
 </body>
