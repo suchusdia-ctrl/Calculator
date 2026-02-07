@@ -9,17 +9,6 @@
     input {width:100%; padding:10px; margin:8px 0; font-size:16px;}
     h2 {text-align:center;}
     .result {margin-top:10px; font-weight:bold; font-size:18px;}
-
-    /* Light blue for calculated fields */
-    #riskMoney {
-      background-color: #d9ecff;
-    }
-
-    .result {
-      background-color: #d9ecff;
-      padding: 10px;
-      border-radius: 6px;
-    }
   </style>
 </head>
 <body>
@@ -28,19 +17,19 @@
   <h2>Risk Management Calculator</h2>
 
   <label>Account Balance ($)</label>
-  <input type="number" id="balance" oninput="recalculate()">
+  <input type="number" id="balance" oninput="updateFromLot(); updateFromRisk();">
 
   <label>Pip Value Per Lot ($)</label>
-  <input type="number" id="pip" oninput="recalculate()">
+  <input type="number" id="pip" oninput="updateFromLot(); updateFromRisk();">
 
   <label>SL Pips</label>
-  <input type="number" id="sl" step="0.01" oninput="fromSL()">
+  <input type="number" id="sl" oninput="updateFromLot(); updateFromRisk();">
 
   <label>Lot Size</label>
-  <input type="number" id="lot" step="0.01" oninput="fromLot()">
+  <input type="number" id="lot" step="0.01" oninput="updateFromLot()">
 
   <label>Risk Per Trade ($)</label>
-  <input type="number" id="riskMoney" step="0.01" oninput="fromRisk()">
+  <input type="number" id="riskMoney" step="0.01" oninput="updateFromRisk()">
 
   <div class="result">
     Risk Per Trade (%): <span id="riskPercent">0</span> %
@@ -48,54 +37,34 @@
 </div>
 
 <script>
-function getValues(){
-  return {
-    balance: parseFloat(document.getElementById('balance').value),
-    pip: parseFloat(document.getElementById('pip').value),
-    sl: parseFloat(document.getElementById('sl').value),
-    lot: parseFloat(document.getElementById('lot').value),
-    risk: parseFloat(document.getElementById('riskMoney').value)
-  };
-}
+function updateFromLot(){
+  let balance = parseFloat(document.getElementById('balance').value);
+  let pip = parseFloat(document.getElementById('pip').value);
+  let sl = parseFloat(document.getElementById('sl').value);
+  let lot = parseFloat(document.getElementById('lot').value);
 
-function updateRiskPercent(risk, balance){
-  if(balance && risk){
-    document.getElementById('riskPercent').innerText =
-      ((risk / balance) * 100).toFixed(2);
-  }
-}
-
-function fromLot(){
-  let {balance, pip, sl, lot} = getValues();
   if(balance && pip && sl && lot){
-    let risk = lot * pip * sl;
-    document.getElementById('riskMoney').value = risk.toFixed(2);
-    updateRiskPercent(risk, balance);
+    let riskMoney = lot * pip * sl;
+    let riskPercent = (riskMoney / balance) * 100;
+
+    document.getElementById('riskMoney').value = riskMoney.toFixed(2);
+    document.getElementById('riskPercent').innerText = riskPercent.toFixed(2);
   }
 }
 
-function fromRisk(){
-  let {balance, pip, sl, risk} = getValues();
-  if(balance && pip && sl && risk){
-    let lot = risk / (pip * sl);
+function updateFromRisk(){
+  let balance = parseFloat(document.getElementById('balance').value);
+  let pip = parseFloat(document.getElementById('pip').value);
+  let sl = parseFloat(document.getElementById('sl').value);
+  let riskMoney = parseFloat(document.getElementById('riskMoney').value);
+
+  if(balance && pip && sl && riskMoney){
+    let lot = riskMoney / (pip * sl);
+    let riskPercent = (riskMoney / balance) * 100;
+
     document.getElementById('lot').value = lot.toFixed(2);
-    updateRiskPercent(risk, balance);
+    document.getElementById('riskPercent').innerText = riskPercent.toFixed(2);
   }
-}
-
-function fromSL(){
-  let {balance, pip, lot, risk} = getValues();
-  if(balance && pip && lot && risk){
-    let sl = risk / (lot * pip);
-    document.getElementById('sl').value = sl.toFixed(2);
-    updateRiskPercent(risk, balance);
-  }
-}
-
-function recalculate(){
-  fromLot();
-  fromRisk();
-  fromSL();
 }
 </script>
 
